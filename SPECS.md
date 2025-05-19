@@ -8,8 +8,8 @@ For **each** spice. We need to accomplish the following items:
 
 ### Functional
 
-- [ ] Blend details page correctly lists the name of all included spices on first load.
-- [ ] State management between pages, so as not to re-request data.
+- [x] Blend details page correctly lists the name of all included spices on first load.
+- [x] State management between pages, so as not to re-request data.
 - [ ] Load a "blend of blend" (2nd, or 3rd blend) listing all spices included in that blend and child blends.
 - [ ] Add new blend of blend to DB (form)
 - [ ] One unit test.

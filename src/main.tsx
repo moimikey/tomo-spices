@@ -25,6 +25,16 @@ async function prefetchSpices() {
   });
 }
 
+async function prefetchBlends() {
+  await queryClient.prefetchQuery({
+    queryKey: ['blends'],
+    queryFn: async () => {
+      const response = await fetch('/api/v1/blends');
+      return response.json();
+    },
+  });
+}
+
 async function enableMocking() {
   const { worker } = await import('./mocks/browser');
   return worker.start();
@@ -54,7 +64,7 @@ const router = createBrowserRouter(
 );
 
 enableMocking()
-  .then(() => prefetchSpices())
+  .then(() => Promise.all([prefetchSpices(), prefetchBlends()]))
   .then(() => {
     createRoot(document.getElementById('root')!).render(
       <StrictMode>
