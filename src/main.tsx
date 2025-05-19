@@ -16,23 +16,53 @@ const queryClient = new QueryClient({
 });
 
 async function prefetchSpices() {
-  await queryClient.prefetchQuery({
-    queryKey: ['spices'],
-    queryFn: async () => {
-      const response = await fetch('/api/v1/spices');
-      return response.json();
-    },
-  });
+  try {
+    await queryClient.prefetchQuery({
+      queryKey: ['spices'],
+      queryFn: async () => {
+        const response = await fetch('/api/v1/spices');
+        if (!response.ok) {
+          console.error('Fetch spices failed with status:', response.status);
+          throw new Error(`Status: ${response.status}`);
+        }
+        const data = await response.json();
+        return data;
+      },
+    });
+  } catch (error) {
+    console.error('Error in prefetchSpices:', error);
+    throw error;
+  }
 }
 
 async function prefetchBlends() {
-  await queryClient.prefetchQuery({
-    queryKey: ['blends'],
-    queryFn: async () => {
-      const response = await fetch('/api/v1/blends');
-      return response.json();
-    },
-  });
+  try {
+    await queryClient.prefetchQuery({
+      queryKey: ['blends'],
+      queryFn: async () => {
+        const response = await fetch('/api/v1/blends');
+        if (!response.ok) {
+          console.error('Fetch blends failed with status:', response.status);
+          throw new Error(`Status: ${response.status}`);
+        }
+        const data = await response.json();
+        return data;
+      },
+    });
+  } catch (error) {
+    console.error('Error in prefetchBlends:', error);
+    throw error;
+  }
+}
+
+async function homeLoader() {
+  try {
+    await Promise.all([prefetchSpices(), prefetchBlends()]);
+    return null;
+  } catch (error) {
+    console.error('Error in homeLoader:', error);
+    throw error;
+  }
 }
 
 async function enableMocking() {
@@ -45,7 +75,7 @@ const router = createBrowserRouter(
     {
       path: '/',
       element: <Home />,
-      errorElement: <Home />,
+      loader: homeLoader,
     },
     {
       path: '/spices/:id',
@@ -63,17 +93,12 @@ const router = createBrowserRouter(
   },
 );
 
-enableMocking()
-  .then(() => Promise.all([prefetchSpices(), prefetchBlends()]))
-  .then(() => {
-    createRoot(document.getElementById('root')!).render(
-      <StrictMode>
-        <QueryClientProvider client={queryClient}>
-          <RouterProvider
-            router={router}
-            future={{ v7_startTransition: true }}
-          />
-        </QueryClientProvider>
-      </StrictMode>,
-    );
-  });
+enableMocking().then(() => {
+  createRoot(document.getElementById('root')!).render(
+    <StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} future={{ v7_startTransition: true }} />
+      </QueryClientProvider>
+    </StrictMode>,
+  );
+});
