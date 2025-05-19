@@ -1,26 +1,43 @@
 import { Link } from 'react-router-dom';
-import type { Blend, Spice } from '../types';
+import { Blend, Spice } from '../types';
 import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+
+const Spices = ({ searchString }: { searchString?: string }) => {
+  const { data: spices } = useQuery({
+    queryKey: ['spices'],
+    queryFn: async () => {
+      const response = await fetch('/api/v1/spices');
+      return response.json();
+    },
+  });
+
+  return (
+    <ul>
+      {spices
+        ?.filter((spice: Spice) =>
+          spice.name.toLowerCase().includes(searchString?.toLowerCase() ?? ''),
+        )
+        .map((spice: Spice) => (
+          <li key={spice.id}>
+            <Link to={`/spices/${spice.id}`}>{spice.name}</Link>
+          </li>
+        ))}
+    </ul>
+  );
+};
 
 function Home() {
-  const [spices, setSpices] = useState<Spice[]>([]);
   const [blends, setBlends] = useState<Blend[]>([]);
   const [searchString, updateSearchString] = useState('');
 
   useEffect(() => {
-    async function fetchSpices() {
-      const spicesResponse = await fetch('/api/v1/spices');
-      const spices = await spicesResponse.json();
-      setSpices(spices);
-    }
-
     async function fetchBlends() {
       const blendsResponse = await fetch('/api/v1/blends');
       const blends = await blendsResponse.json();
       setBlends(blends);
     }
 
-    fetchSpices();
     fetchBlends();
   }, []);
 
@@ -35,15 +52,7 @@ function Home() {
           }}
         />
       </div>
-      {spices
-        .filter((spice) =>
-          spice.name.toLowerCase().includes(searchString.toLowerCase()),
-        )
-        .map((spice) => (
-          <div key={spice.id}>
-            <Link to={`/spices/${spice.id}`}>{spice.name}</Link>
-          </div>
-        ))}
+      <Spices searchString={searchString} />
       <h4>Blend List</h4>
       {blends
         .filter((blend) =>

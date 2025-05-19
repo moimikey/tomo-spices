@@ -1,12 +1,10 @@
 # Technical Specs for Tomo Spice Blend Take Home Challenge
 
-## Overview
-
-This is a single page React application that allows users to view and manage spice blends. The application is built with React and uses React Router for navigation. The application is styled with Tailwind CSS. The application is built with Vite.
+## Abstract
 
 ## Requirements
 
-For each spice. We need to accomplish the following items:
+For **each** spice. We need to accomplish the following items:
 
 ### Functional
 
@@ -20,50 +18,122 @@ For each spice. We need to accomplish the following items:
 
 ### Non-Functional
 
-- [ ] Use React Query to manage data fetching and caching.
-- [ ] Use React Context to manage state between pages.
-- [ ] Use React Router to manage navigation between pages.
-- [ ] Use React Hooks to manage state and side effects.
-- [ ] Use React Suspense to manage loading states.
-- [ ] Use React Error Boundaries to manage error handling.
-- [ ] Use React Memo to manage memoization.
+XXX
+
+### Non-Goals
+
+- Building a backend API
+- xxx
 
 ### User Journey
 
 1. User navigates to the home page.
-2. User sees a list of spices.
-3. User clicks on a spice to view the spice details.
-4. User sees the spice details.
+2. User sees a list of spices and spice blends.
+3. User clicks on a spice or spice blend to view the details.
+4. User sees the spice or spice blend details.
+5. User can navigate back to the home page.
 
-## Environment
+## Specification
 
-### Tech Stack
+### Types
 
-- [ ] React
-- [ ] React Router
-- [ ] Tailwind CSS
-- [ ] Vite
-- [ ] React Query
-- [ ] React Context
-- [ ] React Router
-- [ ] React Hooks
-- [ ] React Suspense
+```typescript
+import { z } from 'zod';
 
-## Architecture
+export const SpiceSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  price: z.string(),
+  color: z.string(),
+  heat: z.number(),
+});
 
-- [ ] Vite SSR with React streaming
-  - [ ] Server-side rendering & data fetching
-  - [ ] Client-side hydration
-  - [ ] React streaming
-  - [ ] React Suspense
-  - [ ] React Error Boundaries
-  - [ ] React Memo
-  - [ ] React Context
+export const BlendSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  blends: z.array(z.number()),
+  spices: z.array(z.number()),
+  description: z.string(),
+});
 
-## Data Models
+export type Spice = z.infer<typeof SpiceSchema>;
+export type Blend = z.infer<typeof BlendSchema>;
+```
+
+## Services
+
+Using Tanstack DB to create client-side, type-safe, real-time, and transactional writes with local optimistic updates.
+
+Queries can be pre-fetched to improve performance and cached automagically by React Query, which DB uses under the hood.
+
+Caching is provided with a cache key (queryKey). For a larger codebase, using query keys in excess can lead to accidental cache invalidation, given the loose nature of the cache key (string). Ex. `spices`.
 
 
+```typescript
+async function prefetchSpices() {
+  await queryClient.prefetchQuery({
+    queryKey: ['spices'],
+    queryFn: async () => {
+      const response = await fetch('/api/v1/spices');
+      return response.json();
+    },
+  });
+}
+```
 
-## Interfaces
+### Spices
 
-## Optimizations
+Spices are cached in the query client with a query key of `spices`. Notice the duplicate query key in the `spiceCollection` below. This is intentional to show the loose nature of the cache key (string).
+
+The `useLiveQuery` hook is used to fetch spices from the query client and return JSX.
+
+```typescript
+import { createQueryCollection } from '@tanstack/db-collections';
+import { useLiveQuery } from '@tanstack/react-db';
+import { SpiceSchema } from './types';
+
+export const spiceCollection = createQueryCollection<Spice>({
+  queryKey: ['spices'],
+  queryFn: async () => fetch('/api/spices'),
+  getId: (spice) => spice.id,
+  schema: SpiceSchema,
+});
+
+export const Spices = (props: SpiceProps) => {
+  const spices = useLiveQuery(spiceCollection);
+  return (
+    <div>
+      {spices.map((spice) => (
+        <div key={spice.id}>{spice.name}</div>
+      ))}
+    </div>
+  );
+};
+```
+
+### Blends
+
+## Overview
+
+## Frontend Application
+
+### Layout
+
+### Homepage
+
+### Spice Detail Page
+
+### Blend Detail Page
+
+### New Blend Page
+
+### Error Page
+
+## Improvement Opportunities
+
+1. Utilization of Electric + PGlite
+
+## References
+
+1. https://github.com/TanStack/db
+2.
