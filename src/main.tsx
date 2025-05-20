@@ -11,12 +11,22 @@ async function enableMocking() {
   return worker.start();
 }
 
-enableMocking().then(() => {
-  createRoot(document.getElementById('root')!).render(
-    <StrictMode>
-      <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} future={{ v7_startTransition: true }} />
-      </QueryClientProvider>
-    </StrictMode>,
-  );
-});
+enableMocking()
+  // @TODO: Uncomment this to enable loading data on initial page load; import `homeLoader` from `router.tsx`
+  // .then(() => homeLoader())
+  .then(() => {
+    createRoot(document.getElementById('root')!).render(
+      <StrictMode>
+        <QueryClientProvider client={queryClient}>
+          <RouterProvider
+            router={router}
+            future={{ v7_startTransition: true }}
+          />
+        </QueryClientProvider>
+      </StrictMode>,
+    );
+  })
+  .catch((error) => {
+    console.error('Error in main.tsx:', error);
+    throw error;
+  });

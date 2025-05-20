@@ -1,5 +1,7 @@
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { queryClient } from '../queries';
+import { Spice } from '../types';
 
 const SpiceDetail = () => {
   const { id } = useParams();
@@ -10,6 +12,7 @@ const SpiceDetail = () => {
       const response = await fetch(`/api/v1/spices/${id}`);
       return response.json();
     },
+    initialData: () => queryClient.getQueryData<Spice>(['spice', id]),
   });
 
   return (

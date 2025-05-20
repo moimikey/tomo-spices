@@ -2,14 +2,17 @@ import { Link } from 'react-router-dom';
 import { Blend, Spice } from '../types';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import {
+  fetchBlendsQueryFn,
+  fetchSpicesQueryFn,
+  queryClient,
+} from '../queries';
 
 const Spices = ({ searchString }: { searchString?: string }) => {
   const { data: spices } = useQuery({
     queryKey: ['spices'],
-    queryFn: async () => {
-      const response = await fetch('/api/v1/spices');
-      return response.json();
-    },
+    queryFn: fetchSpicesQueryFn,
+    initialData: () => queryClient.getQueryData<Spice[]>(['spices']),
   });
 
   return (
@@ -30,10 +33,8 @@ const Spices = ({ searchString }: { searchString?: string }) => {
 const Blends = ({ searchString }: { searchString?: string }) => {
   const { data: blends } = useQuery({
     queryKey: ['blends'],
-    queryFn: async () => {
-      const response = await fetch('/api/v1/blends');
-      return response.json();
-    },
+    queryFn: fetchBlendsQueryFn,
+    initialData: () => queryClient.getQueryData<Blend[]>(['blends']),
   });
 
   return (
