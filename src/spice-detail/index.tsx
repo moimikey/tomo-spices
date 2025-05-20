@@ -1,20 +1,16 @@
-import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import type { Spice } from '../types';
+import { useQuery } from '@tanstack/react-query';
 
 const SpiceDetail = () => {
   const { id } = useParams();
-  const [spice, setSpice] = useState<Spice>();
 
-  useEffect(() => {
-    async function fetchSpice() {
+  const { data: spice } = useQuery({
+    queryKey: ['spice', id],
+    queryFn: async () => {
       const response = await fetch(`/api/v1/spices/${id}`);
-      const spice = await response.json();
-      setSpice(spice);
-    }
-
-    fetchSpice();
-  }, [id]);
+      return response.json();
+    },
+  });
 
   return (
     <div>

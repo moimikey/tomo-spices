@@ -47,3 +47,23 @@ export async function prefetchBlends() {
     throw error;
   }
 }
+
+export async function prefetchSpice(id: string) {
+  try {
+    await queryClient.prefetchQuery({
+      queryKey: ['spice', id],
+      queryFn: async () => {
+        const response = await fetch(`/api/v1/spices/${id}`);
+        if (!response.ok) {
+          console.error('Fetch spice failed with status:', response.status);
+          throw new Error(`Status: ${response.status}`);
+        }
+        const data = await response.json();
+        return data;
+      },
+    });
+  } catch (error) {
+    console.error('Error in prefetchSpice:', error);
+    throw error;
+  }
+}
