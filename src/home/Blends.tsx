@@ -2,6 +2,7 @@ import { useLiveQuery } from '@tanstack/react-db';
 import { Link } from 'react-router-dom';
 import { blendCollection } from '../queries';
 import { Blend } from '../types';
+import { Skeleton } from '../components/ui/skeleton';
 
 export const Blends = ({ searchString }: { searchString?: string }) => {
   const { data: blendsData } = useLiveQuery((query) =>
@@ -20,7 +21,15 @@ export const Blends = ({ searchString }: { searchString?: string }) => {
     .sort((a, b) => a.name.localeCompare(b.name));
 
   if (!blendsArray.length) {
-    return <div>Loading blends...</div>;
+    return (
+      <div className="flex flex-col space-y-3">
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-[250px]" />
+          <Skeleton className="h-4 w-[200px]" />
+          <Skeleton className="h-4 w-[200px]" />
+        </div>
+      </div>
+    );
   }
 
   if (!filteredBlends.length) {
