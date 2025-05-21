@@ -1,6 +1,14 @@
 import { Link, useParams } from 'react-router-dom';
 import { spiceCollection } from '../queries';
 import { useLiveQuery } from '@tanstack/react-db';
+import { MoveLeft } from 'lucide-react';
+import {
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '../components/ui/card';
+import { Card } from '../components/ui/card';
 
 const SpiceDetailContent = ({ id }: { id: number }) => {
   const { data: spices } = useLiveQuery(
@@ -16,12 +24,27 @@ const SpiceDetailContent = ({ id }: { id: number }) => {
   const spice = spices?.[0];
 
   return (
-    <div>
-      <div>Spice Name: {spice?.name}</div>
-      <div>Spice Color: {spice?.color}</div>
-      <div>Spice Cost: {spice?.price}</div>
-      <div>Spice Heat Level: {spice?.heat}</div>
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex flex-row gap-2 items-center">
+          <h1 className="text-2xl font-bold">{spice?.name}</h1>
+          <h2>
+            {Array.from({ length: spice?.heat || 0 }, (_, i) => (
+              <span key={i}>🌶️</span>
+            ))}
+          </h2>
+        </CardTitle>
+        <CardDescription>
+          <h2>{spice?.price}</h2>
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <img
+          src={`https://singlecolorimage.com/get/${spice?.color}/400x100`}
+          alt={`${spice?.name} color`}
+        />
+      </CardContent>
+    </Card>
   );
 };
 
@@ -30,11 +53,16 @@ const SpiceDetail = () => {
   const spiceIdNumber = Number(spiceId);
 
   return (
-    <div>
-      <Link to="/">Back to Home</Link>
-      <h2>Spice Detail Page</h2>
-      <SpiceDetailContent id={spiceIdNumber} />
-    </div>
+    <section className="flex flex-col gap-4 m-4">
+      <div className="flex items-center gap-2">
+        <MoveLeft />
+        <Link to="/">Back to Home</Link>
+      </div>
+
+      <div className="flex flex-col gap-4">
+        <SpiceDetailContent id={spiceIdNumber} />
+      </div>
+    </section>
   );
 };
 
