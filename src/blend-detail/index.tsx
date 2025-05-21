@@ -75,7 +75,10 @@ const BlendDetail = () => {
                         key={`${spice?.id}-${spice?.name}`}
                         className="flex items-center gap-2"
                       >
-                        <FlowerIcon className="w-4 h-4" />
+                        <FlowerIcon
+                          className="w-4 h-4"
+                          color={`#${spice?.color ?? '000000'}`}
+                        />
                         <Link to={`/spices/${spice?.id}`}>{spice?.name}</Link>
                       </li>
                     ))}

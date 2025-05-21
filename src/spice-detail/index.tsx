@@ -23,6 +23,13 @@ const SpiceDetailContent = ({ id }: { id: number }) => {
 
   const spice = spices?.[0];
 
+  const spicePriciness =
+    spice?.price === '$'
+      ? 'Inexpensive'
+      : spice?.price === '$$'
+      ? 'Moderately priced'
+      : 'Expensive';
+
   return (
     <Card>
       <CardHeader>
@@ -35,15 +42,11 @@ const SpiceDetailContent = ({ id }: { id: number }) => {
           </h2>
         </CardTitle>
         <CardDescription>
-          <h2>{spice?.price}</h2>
+          <h2>
+            {spice?.price} - {spicePriciness}
+          </h2>
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <img
-          src={`https://singlecolorimage.com/get/${spice?.color}/400x100`}
-          alt={`${spice?.name} color`}
-        />
-      </CardContent>
     </Card>
   );
 };

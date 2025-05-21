@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { spiceCollection } from '../queries';
 import { Spice } from '../types';
 import { Skeleton } from '../components/ui/skeleton';
+import { FlowerIcon } from 'lucide-react';
 
 export const Spices = ({ searchString }: { searchString?: string }) => {
   const { data: spicesData } = useLiveQuery((query) =>
@@ -41,7 +42,11 @@ export const Spices = ({ searchString }: { searchString?: string }) => {
   return (
     <ul>
       {filteredSpices.map((spice) => (
-        <li key={spice.id}>
+        <li key={spice.id} className="flex items-center gap-2">
+          <FlowerIcon
+            className="w-4 h-4"
+            color={`#${spice?.color ?? '000000'}`}
+          />
           <Link to={`/spices/${spice.id}`}>{spice.name}</Link>
         </li>
       ))}

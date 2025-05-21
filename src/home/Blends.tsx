@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { blendCollection } from '../queries';
 import { Blend } from '../types';
 import { Skeleton } from '../components/ui/skeleton';
+import { SaladIcon } from 'lucide-react';
 
 export const Blends = ({ searchString }: { searchString?: string }) => {
   const { data: blendsData } = useLiveQuery((query) =>
@@ -41,7 +42,8 @@ export const Blends = ({ searchString }: { searchString?: string }) => {
   return (
     <ul>
       {filteredBlends.map((blend) => (
-        <li key={blend.id}>
+        <li key={blend.id} className="flex items-center gap-2">
+          <SaladIcon className="w-4 h-4" />
           <Link to={`/blends/${blend.id}`}>{blend.name}</Link>
         </li>
       ))}
