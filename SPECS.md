@@ -6,24 +6,21 @@
 
 For **each** spice. We need to accomplish the following items:
 
-### Functional
+### Goals
 
 - [x] Blend details page correctly lists the name of all included spices on first load.
 - [x] State management between pages, so as not to re-request data.
-- [ ] Load a "blend of blend" (2nd, or 3rd blend) listing all spices included in that blend and child blends.
-- [ ] Add new blend of blend to DB (form)
-- [ ] One unit test.
-- [ ] One new "feature" or "refactor" that shows what you consider to be your FE strengths
-- [ ] One new "architecture pattern", or least be prepared to talk about one you'd like to add.
-
-### Non-Functional
-
-XXX
+- [x] Load a "blend of blend" (2nd, or 3rd blend) listing all spices included in that blend and child blends.
+- [x] Add new blend of blend to DB (form)
+- [x] One new "feature" or "refactor" that shows what you consider to be your FE strengths
+- [x] One new "architecture pattern", or least be prepared to talk about one you'd like to add.
 
 ### Non-Goals
 
 - Building a backend API
-- xxx
+- Server-side rendering (SSR)
+- Maintaining state upon refresh
+- Infinite scroll / Load more / Pagination
 
 ### User Journey
 
@@ -67,7 +64,6 @@ Using Tanstack DB to create client-side, type-safe, real-time, and transactional
 Queries can be pre-fetched to improve performance and cached automagically by React Query, which DB uses under the hood.
 
 Caching is provided with a cache key (queryKey). For a larger codebase, using query keys in excess can lead to accidental cache invalidation, given the loose nature of the cache key (string). Ex. `spices`.
-
 
 ```typescript
 async function prefetchSpices() {
@@ -113,27 +109,48 @@ export const Spices = (props: SpiceProps) => {
 
 ### Blends
 
+Like `spices`, `blends` are cached in the query client with a query key of `blends` and a query function that fetches the data from the server:
+
+```typescript
+const Blends = ({ searchString }: { searchString?: string }) => {
+  const { data: blends } = useQuery({
+    queryKey: ['blends'],
+    queryFn: async () => {
+      const response = await fetch('/api/v1/blends');
+      return response.json();
+    },
+  });
+
+  return (
+    <ul>
+      {blends
+        ?.filter((blend: Blend) =>
+          blend.name.toLowerCase().includes(searchString?.toLowerCase() ?? ''),
+        )
+        .map((blend: Blend) => (
+          <li key={blend.id}>
+            <Link to={`/blends/${blend.id}`}>{blend.name}</Link>
+          </li>
+        ))}
+    </ul>
+  );
+};
+```
+
 ## Overview
 
-## Frontend Application
-
-### Layout
-
-### Homepage
-
-### Spice Detail Page
-
-### Blend Detail Page
-
-### New Blend Page
-
-### Error Page
+1. Robust types with Zod (`types.ts`)
+2. Centralized routing in (`router.tsx`)
+3. React Query provider for fetching (`main.tsx`)
+4. Centralized queries in (`queries.tsx`)
 
 ## Improvement Opportunities
 
 1. Utilization of Electric + PGlite
+2. Utilization of Next.js for file-based routing & SSR
+3. `useQuery` calls can be moved to its own dedicated file for re-use
+4. URL-based state
 
 ## References
 
-1. https://github.com/TanStack/db
-2.
+1. https://github.com/TanStack/db/blob/main/docs/index.md
