@@ -1,21 +1,19 @@
+import { vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from '../queries';
-import { data as mockBlends } from '../mocks/data/blends';
-import { data as mockSpices } from '../mocks/data/spices';
+import { data as mockBlendsData } from '../mocks/data/blends';
+import { data as mockSpicesData } from '../mocks/data/spices';
+import { Blend } from '../types';
 import BlendDetail from '.';
 
-beforeEach(async () => {
-  queryClient.clear();
+vi.mock('@tanstack/react-db', () => ({
+  useLiveQuery: vi.fn(),
+}));
 
-  const blends = mockBlends();
-  queryClient.setQueryData(['blend'], blends);
-
-  const spices = mockSpices();
-  queryClient.setQueryData(['spice'], spices);
-  queryClient.refetchQueries();
-});
+// Import the mocked version of useLiveQuery after vi.mock
+import { useLiveQuery } from '@tanstack/react-db';
 
 const renderBlendDetail = (blendId: string) => {
   return render(
@@ -30,66 +28,104 @@ const renderBlendDetail = (blendId: string) => {
 };
 
 describe('BlendDetail', () => {
-  it('renders basic blend details correctly', async () => {
-    renderBlendDetail('0');
+  let callCount = 0;
 
-    await waitFor(() => {
-      const blendName = screen.getByText(/Blend Name:/);
-      expect(blendName).toBeInTheDocument();
-      // expect(blendName.textContent).toBe('Blend Name: Tasty Blend');
-    });
-  });
+  const allMockBlends = mockBlendsData();
+  const allMockSpices = mockSpicesData();
 
-  it.skip('resolves and displays spices correctly', async () => {
-    renderBlendDetail('0');
+  beforeEach(() => {
+    vi.clearAllMocks();
+    queryClient.clear();
+    callCount = 0;
 
-    // The first blend has spices [1, 5, 35, 52]
-    await waitFor(() => {
-      const spicesList = screen.getByText(/Spices:/);
-      expect(spicesList).toBeInTheDocument();
-    });
+    const mockedUseLiveQuery = useLiveQuery as ReturnType<typeof vi.fn>;
 
-    // Check that all spice links are rendered
-    // const spices = mockSpices();
-    // const blend = mockBlends()[0];
-
-    // for (const spiceId of blend.spices) {
-    //   const spice = spices.find((s) => s.id === spiceId);
-    //   if (spice) {
-    //     expect(screen.getByText(spice.name)).toBeInTheDocument();
-    //   }
-    // }
-  });
-
-  it.skip('resolves and displays nested blends correctly', async () => {
-    // Use blend ID 2 which has nested blends [0, 1]
-    renderBlendDetail('2');
-
-    await waitFor(() => {
-      expect(screen.getByText('Child Blends:')).toBeInTheDocument();
-    });
-
-    // Check that nested blend links are rendered
-    const blends = mockBlends();
-    const metaBlend = blends.find((b) => b.id === 2);
-
-    for (const nestedBlendId of metaBlend!.blends) {
-      const nestedBlend = blends.find((b) => b.id === nestedBlendId);
-      if (nestedBlend) {
-        expect(screen.getByText(nestedBlend.name)).toBeInTheDocument();
+    mockedUseLiveQuery.mockImplementation((_queryBuilder, deps) => {
+      callCount++;
+      if (callCount === 1) {
+        const blendIdToFind = deps && deps.length > 0 ? deps[0] : undefined;
+        if (typeof blendIdToFind === 'number') {
+          const foundBlend = allMockBlends.find(
+            (b: Blend) => b.id === blendIdToFind,
+          );
+          return { data: foundBlend ? [foundBlend] : [] };
+        }
+        return { data: [] };
+      } else if (callCount === 2) {
+        return { data: allMockSpices };
+      } else if (callCount === 3) {
+        return { data: allMockBlends };
       }
-    }
+      return { data: [] };
+    });
   });
 
-  it.skip('handles non-existent blend IDs gracefully', async () => {
-    renderBlendDetail('999');
-
-    // Since the blend doesn't exist, we should still see the header but no data
-    expect(screen.getByText('Blend Detail Page')).toBeInTheDocument();
-
-    // The blend name should not be visible since the data is undefined
+  it('renders basic blend details correctly for different blend IDs', async () => {
+    // Render the first blend
+    renderBlendDetail('0');
     await waitFor(() => {
-      expect(screen.queryByText(/Blend Name:/)).not.toBeInTheDocument();
+      const tastyBlendData = allMockBlends.find((b) => b.id === 0);
+      expect(
+        tastyBlendData,
+        'Missing blend: Tasty Blend (id: 0)',
+      ).toBeDefined();
+      expect(screen.getByText(tastyBlendData!.name)).toBeInTheDocument();
     });
+
+    // Render a different blend
+    callCount = 0;
+    renderBlendDetail('1');
+    await waitFor(() => {
+      const sweetBlendData = allMockBlends.find((b) => b.id === 1);
+      expect(
+        sweetBlendData,
+        'Missing blend: Sweet Blend (id: 1)',
+      ).toBeDefined();
+      expect(screen.getByText(sweetBlendData!.name)).toBeInTheDocument();
+    });
+  });
+
+  it('displays the correct spices for a given blend', async () => {
+    const blendIdToTest = 0;
+    renderBlendDetail(String(blendIdToTest));
+
+    const targetBlend = allMockBlends.find((b) => b.id === blendIdToTest);
+    expect(
+      targetBlend,
+      `Blend ID ${blendIdToTest} not found in data`,
+    ).toBeDefined();
+    expect(
+      targetBlend!.spices,
+      `Blend ID ${blendIdToTest} has no spices`,
+    ).toBeDefined();
+    expect(targetBlend!.spices.length).toBeGreaterThan(0);
+
+    await waitFor(() => {
+      for (const spiceId of targetBlend!.spices) {
+        const spiceInfo = allMockSpices.find((s) => s.id === spiceId);
+        expect(
+          spiceInfo,
+          `Spice ID ${spiceId} not found in data`,
+        ).toBeDefined();
+        expect(screen.getByText(spiceInfo!.name)).toBeInTheDocument();
+      }
+    });
+
+    // test a *different* blend
+    // callCount = 0;
+    // const secondBlendIdToTest = 2;
+
+    // renderBlendDetail(String(secondBlendIdToTest));
+    // const secondTargetBlend = allMockBlends.find(
+    //   (b) => b.id === secondBlendIdToTest,
+    // );
+    // expect(secondTargetBlend).toBeDefined();
+    // await waitFor(() => {
+    //   for (const spiceId of secondTargetBlend!.spices) {
+    //     const spiceInfo = allMockSpices.find((s) => s.id === spiceId);
+    //     expect(spiceInfo).toBeDefined();
+    //     expect(screen.getByText(spiceInfo!.name)).toBeInTheDocument();
+    //   }
+    // });
   });
 });

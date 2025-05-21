@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import Home from './index';
 import { MemoryRouter } from 'react-router-dom';
 
-test('renders home page', async () => {
+test('renders home page with a list of spice blends', async () => {
   render(
     <MemoryRouter future={{ v7_startTransition: true }}>
       <Home />
@@ -11,7 +11,7 @@ test('renders home page', async () => {
 
   expect(
     screen.getByRole('heading', {
-      name: /spice list/i,
+      name: /a lovely list of spice blends!/i,
     }),
   ).toBeInTheDocument();
 });
