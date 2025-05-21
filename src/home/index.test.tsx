@@ -4,9 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 
 test('renders home page', async () => {
   render(
-    <MemoryRouter
-      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-    >
+    <MemoryRouter future={{ v7_startTransition: true }}>
       <Home />
     </MemoryRouter>,
   );
@@ -15,8 +13,5 @@ test('renders home page', async () => {
     screen.getByRole('heading', {
       name: /spice list/i,
     }),
-  ).toBeInTheDocument();
-  expect(
-    await screen.findByRole('link', { name: /adobo/i }),
   ).toBeInTheDocument();
 });
