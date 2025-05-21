@@ -137,20 +137,6 @@ const Blends = ({ searchString }: { searchString?: string }) => {
 };
 ```
 
-## Overview
-
-1. Robust types with Zod (`types.ts`)
-2. Centralized routing in (`router.tsx`)
-3. React Query provider for fetching (`main.tsx`)
-4. Centralized queries in (`queries.tsx`)
-
-## Improvement Opportunities
-
-1. Utilization of Electric + PGlite
-2. Utilization of Next.js for file-based routing & SSR
-3. `useQuery` calls can be moved to its own dedicated file for re-use
-4. URL-based state
-
 ## References
 
 1. https://github.com/TanStack/db/blob/main/docs/index.md
