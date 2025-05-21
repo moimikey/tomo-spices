@@ -8,8 +8,10 @@ import {
   CardTitle,
   CardDescription,
 } from '../components/ui/card';
-import { FlowerIcon, MoveLeft, SaladIcon } from 'lucide-react';
+import { FlowerIcon, MoveLeft, SaladIcon, SlashIcon } from 'lucide-react';
 import { Separator } from '@radix-ui/react-dropdown-menu';
+import { Badge } from '../components/ui/badge';
+import { Spice } from '../types';
 
 const BlendDetail = () => {
   const { id: blendId } = useParams<{ id: string }>();
@@ -48,6 +50,13 @@ const BlendDetail = () => {
     return allBlendsArray.find((b) => b.id === blendId);
   });
 
+  const spicePriciness = (spice: Spice) =>
+    spice?.price === '$'
+      ? 'Inexpensive'
+      : spice?.price === '$$$'
+      ? 'Moderately priced'
+      : 'Expensive';
+
   return (
     <div className="flex flex-col gap-4 m-4">
       <div className="flex items-center gap-2">
@@ -80,6 +89,25 @@ const BlendDetail = () => {
                           color={`#${spice?.color ?? '000000'}`}
                         />
                         <Link to={`/spices/${spice?.id}`}>{spice?.name}</Link>
+                        <Badge
+                          variant="secondary"
+                          className="flex items-center gap-1"
+                        >
+                          {spicePriciness(spice as Spice)}
+                          <SlashIcon className="w-4 h-4" />
+                          <span className="text-xs flex items-center gap-1">
+                            {Array.from(
+                              { length: spice?.heat || 0 },
+                              (_, i) => (
+                                <span key={i} className="text-xs">
+                                  🌶️
+                                </span>
+                              ),
+                            )}
+                          </span>
+                        </Badge>
+
+                        <div className="flex items-center gap-1"></div>
                       </li>
                     ))}
                   </ul>
