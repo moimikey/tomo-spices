@@ -1,31 +1,39 @@
-import { useParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { queryClient } from '../queries';
-import { Spice } from '../types';
+import { Link, useParams } from 'react-router-dom';
+import { spiceCollection } from '../queries';
+import { useLiveQuery } from '@tanstack/react-db';
 
-const SpiceDetail = () => {
-  const { id } = useParams();
+const SpiceDetailContent = ({ id }: { id: number }) => {
+  const { data: spices } = useLiveQuery(
+    (query) =>
+      query
+        .from({ spiceCollection })
+        .where('@id', '=', id)
+        .select('@name', '@id', '@color', '@heat', '@price')
+        .keyBy('@id'),
+    [id],
+  );
 
-  const { data: spice } = useQuery({
-    queryKey: ['spice', id],
-    queryFn: async () => {
-      const response = await fetch(`/api/v1/spices/${id}`);
-      return response.json();
-    },
-    initialData: () => queryClient.getQueryData<Spice>(['spice', id]),
-  });
+  const spice = spices?.[0];
 
   return (
     <div>
+      <div>Spice Name: {spice?.name}</div>
+      <div>Spice Color: {spice?.color}</div>
+      <div>Spice Cost: {spice?.price}</div>
+      <div>Spice Heat Level: {spice?.heat}</div>
+    </div>
+  );
+};
+
+const SpiceDetail = () => {
+  const { id: spiceId } = useParams<{ id: string }>();
+  const spiceIdNumber = Number(spiceId);
+
+  return (
+    <div>
+      <Link to="/">Back to Home</Link>
       <h2>Spice Detail Page</h2>
-      {spice && (
-        <div>
-          <div>Spice Name: {spice.name}</div>
-          <div>Spice Color: {spice.color}</div>
-          <div>Spice Cost: {spice.price}</div>
-          <div>Spice Heat Level: {spice.heat}</div>
-        </div>
-      )}
+      <SpiceDetailContent id={spiceIdNumber} />
     </div>
   );
 };
