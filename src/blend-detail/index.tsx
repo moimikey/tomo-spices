@@ -1,6 +1,15 @@
 import { Link, useParams } from 'react-router-dom';
 import { useLiveQuery } from '@tanstack/react-db';
 import { blendCollection, spiceCollection } from '../queries';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from '../components/ui/card';
+import { FlowerIcon, MoveLeft, SaladIcon } from 'lucide-react';
+import { Separator } from '@radix-ui/react-dropdown-menu';
 
 const BlendDetail = () => {
   const { id: blendId } = useParams<{ id: string }>();
@@ -40,42 +49,63 @@ const BlendDetail = () => {
   });
 
   return (
-    <div>
-      <Link to="/">Back to Home</Link>
-      <h2>Blend Detail Page</h2>
-      <div>Blend Name: {blend?.name}</div>
-      <div>Description: {blend?.description}</div>
-      {resolvedSpices && resolvedSpices.length > 0 && (
-        <>
-          <hr />
-          <div>
-            Spices:
-            <ul>
-              {resolvedSpices.map((spice) => (
-                <li key={`${spice?.id}-${spice?.name}`}>
-                  <Link to={`/spices/${spice?.id}`}>{spice?.name}</Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </>
-      )}
-      {resolvedBlends && resolvedBlends?.length > 0 && (
-        <>
-          <hr />
-          <div>
-            Child Blends:
-            <ul>
-              {resolvedBlends.map((childBlend) => (
-                <li key={`${childBlend?.id}-${childBlend?.name}`}>
-                  <Link to={`/blends/${childBlend?.id}`}>
-                    {childBlend?.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </>
+    <div className="flex flex-col gap-4 m-4">
+      <div className="flex items-center gap-2">
+        <MoveLeft />
+        <Link to="/">Back to Home</Link>
+      </div>
+      {blend && (
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              <h1 className="text-2xl font-bold">{blend?.name}</h1>
+            </CardTitle>
+            <CardDescription>
+              <h2>{blend?.description}</h2>
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {resolvedSpices && resolvedSpices.length > 0 && (
+              <>
+                <h3 className="text-md font-bold">Included spices:</h3>
+                <section>
+                  <ul>
+                    {resolvedSpices.map((spice) => (
+                      <li
+                        key={`${spice?.id}-${spice?.name}`}
+                        className="flex items-center gap-2"
+                      >
+                        <FlowerIcon className="w-4 h-4" />
+                        <Link to={`/spices/${spice?.id}`}>{spice?.name}</Link>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              </>
+            )}
+            {resolvedBlends && resolvedBlends?.length > 0 && (
+              <>
+                <Separator className="my-4 bg-muted" />
+                <section>
+                  <h3 className="text-md font-bold">Included blends:</h3>
+                  <ul>
+                    {resolvedBlends.map((childBlend) => (
+                      <li
+                        key={`${childBlend?.id}-${childBlend?.name}`}
+                        className="flex items-center gap-2"
+                      >
+                        <SaladIcon className="w-4 h-4" />
+                        <Link to={`/blends/${childBlend?.id}`}>
+                          {childBlend?.name}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              </>
+            )}
+          </CardContent>
+        </Card>
       )}
     </div>
   );
